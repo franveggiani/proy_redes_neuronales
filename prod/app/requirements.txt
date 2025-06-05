@@ -2,3 +2,6 @@ altair
 pandas
 streamlit==1.22.0
 streamlit-drawable-canvas==0.9.2
+pillow
+requests
+numpy

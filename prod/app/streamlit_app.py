@@ -1,39 +1,48 @@
+# streamlit_app.py
 import streamlit as st
-from streamlit_drawable_canvas import st_canvas
-from PIL import Image
+import requests
+from PIL import Image, ImageOps
+import io
+import base64
+import numpy as np
 
-# --- Configuración ---
-SAM_MAX_SIZE = 768  # Tamaño máximo permitido por SAM
+st.title("Segmentación con YOLOv8-seg (FastAPI)")
 
-# --- Cargar y redimensionar la imagen ---
-original_image = Image.open("ejemplo.jpg")
+uploaded_file = st.file_uploader("Subí una imagen", type=["jpg", "jpeg", "png"])
 
-# Redimensionar manteniendo el aspecto
-original_width, original_height = original_image.size
-scale = SAM_MAX_SIZE / max(original_width, original_height)
-new_width = int(original_width * scale)
-new_height = int(original_height * scale)
-resized_image = original_image.resize((new_width, new_height))
+if uploaded_file is not None:
+    original_img = Image.open(uploaded_file).convert("RGB")
+    st.image(original_img, caption="Imagen original", use_column_width=True)
 
-# Canvas interactivo
-st.write("Hacé clic en dos puntos sobre la imagen")
-canvas_result = st_canvas(
-    fill_color="rgba(255, 0, 0, 0.3)",
-    stroke_width=3,
-    background_image=resized_image,
-    update_streamlit=True,
-    height=resized_image.height,
-    width=resized_image.width,
-    drawing_mode="point",
-    point_display_radius=5,
-    key="canvas",
-)
+    if st.button("Segmentar"):
+        with st.spinner("Segmentando..."):
+            # Enviar la imagen a la API
+            response = requests.post(
+                "http://localhost:8000/segment",
+                files={"file": uploaded_file}
+            )
 
-# Mostrar coordenadas
-if canvas_result.json_data is not None:
-    puntos = []
-    for obj in canvas_result.json_data["objects"]:
-        x = int(obj["left"])
-        y = int(obj["top"])
-        puntos.append([x, y])
-    st.write("Puntos clickeados:", puntos)
+        if response.status_code == 200:
+            data = response.json()
+            num_masks = data["num_masks"]
+            st.success(f"{num_masks} máscara(s) detectadas")
+
+            # Crear una copia de la imagen original para superponer máscaras
+            combined = original_img.copy().convert("RGBA")
+
+            for idx, b64_mask in enumerate(data["masks_base64"]):
+                mask_bytes = base64.b64decode(b64_mask)
+                mask_img = Image.open(io.BytesIO(mask_bytes)).convert("L")
+
+                # Crear una máscara RGBA: canal alpha es la máscara
+                rgba_mask = Image.new("RGBA", combined.size, (255, 0, 0, 0))
+                red = Image.new("RGBA", combined.size, (255, 0, 0, 100))  # rojo semi-transparente
+                rgba_mask = Image.composite(red, rgba_mask, mask_img)
+
+                # Superponer sobre la imagen original
+                combined = Image.alpha_composite(combined, rgba_mask)
+
+            st.image(combined, caption="Resultado con máscaras", use_column_width=True)
+
+        else:
+            st.error(f"Error al segmentar: {response.status_code}")
