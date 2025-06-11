@@ -37,7 +37,7 @@ if uploaded_file is not None:
             # Crear una copia de la imagen original para superponer máscaras
             combined = original_img.copy().convert("RGBA")
 
-            for idx, b64_mask in enumerate(data["masks_base64"]):
+            for idx, b64_mask in enumerate(result["masks_base64"]):
                 mask_bytes = base64.b64decode(b64_mask)
                 mask_img = Image.open(io.BytesIO(mask_bytes)).convert("L")
 
