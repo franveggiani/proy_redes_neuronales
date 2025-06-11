@@ -76,7 +76,7 @@ if uploaded_file is not None:
                 with col1 if idx % 2 == 0 else col2:
                     st.image(img, caption=f"Máscara {idx + 1} recortada", use_column_width=True)
                     
-                    stylized = apply_style_transfer(img, "prod/style_transfer/tokio_ghoul_aggressive.pth")
+                    stylized = apply_style_transfer(img, "prod/style_transfer/tokyo_ghoul_aggressive.pth")
                     st.image(stylized, caption=f"Máscara {idx + 1} con estilo", use_column_width=True)
                 
                 
