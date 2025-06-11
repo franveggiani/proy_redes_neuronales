@@ -6,7 +6,7 @@ import io
 import base64
 import numpy as np
 from ultralytics import YOLO
-from .utils import segment_utils
+from .utils import segment
 import os
 
 st.title("Segmentación con YOLOv8-seg (FastAPI)")

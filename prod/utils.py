@@ -2,7 +2,7 @@ import io
 import base64
 from PIL import Image
 
-def segment_image_sync(image: Image.Image, model, image_path):
+def segment(image: Image.Image, model, image_path):
     # Asegurarse de que la imagen esté en RGB
     image = image.convert("RGB")
     
