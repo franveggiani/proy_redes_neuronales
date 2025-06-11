@@ -56,7 +56,7 @@ if uploaded_file is not None:
                 combined_list.append(combined)
                 
             for idx, img in enumerate(combined_list):
-                st.image(img, caption=f"Máscara {idx + 1}", use_column_width=True, width=300)
+                st.image(img, caption=f"Máscara {idx + 1}", width=300)
                 
         else:
             st.error(f"Error al segmentar: {result}")
