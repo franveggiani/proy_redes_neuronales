@@ -21,8 +21,8 @@ if uploaded_file is not None:
     st.image(original_img, caption="Imagen original", use_column_width=True)
     
     # Creo carpeta para guardar imágenes
-    os.makedirs("/images", exist_ok=True)
-    image_path = os.path.join("/images", uploaded_file.name)
+    os.makedirs("images", exist_ok=True)
+    image_path = os.path.join("images", uploaded_file.name)
 
     if st.button("Segmentar"):
         with st.spinner("Segmentando..."):
