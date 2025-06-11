@@ -20,8 +20,8 @@ def apply_style_transfer(content_image: Image.Image, model_path: str) -> Image.I
     # Cargar el modelo
     with torch.no_grad():
         style_model = TransformerNet().to(device)
-        state_dict = torch.load(model_path)
-        style_model.load_state_dict(state_dict, map_location='cpu')
+        state_dict = torch.load(model_path, map_location=device)
+        style_model.load_state_dict(state_dict)
         style_model.eval()
 
         # Inferencia
