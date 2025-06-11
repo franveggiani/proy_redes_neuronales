@@ -37,6 +37,7 @@ if uploaded_file is not None:
             # Crear una copia de la imagen original para superponer máscaras
             combined = original_img.copy().convert("RGBA")
             combined_list = []
+            cropped_list = []
 
             for idx, b64_mask in enumerate(result["masks_base64"]):
                 mask_bytes = base64.b64decode(b64_mask)
@@ -44,6 +45,10 @@ if uploaded_file is not None:
 
                 # Redimensionar máscara al tamaño de la imagen original
                 mask_img = mask_img.resize(combined.size)
+                
+                # Recorto imagen original con la máscara
+                cropped = Image.composite(original_img, Image.new("RGB", original_img.size, (0, 0, 0)), mask_img)
+                cropped_list.append(cropped)
 
                 # Crear una máscara RGBA: canal alpha es la máscara
                 rgba_mask = Image.new("RGBA", combined.size, (255, 0, 0, 0))
@@ -52,7 +57,6 @@ if uploaded_file is not None:
 
                 # Superponer sobre la imagen original
                 combined = Image.alpha_composite(combined, rgba_mask)
-                
                 combined_list.append(combined)
                 
             # Mostramos mascaras superpuestas en formato de tabla con dos columnas    
@@ -60,6 +64,14 @@ if uploaded_file is not None:
             col1, col2 = st.columns(2)
                 
             for idx, img in enumerate(combined_list):
+                with col1 if idx % 2 == 0 else col2:
+                    st.image(img, caption=f"Máscara {idx + 1} (superpuesta)", use_column_width=True)
+                    
+            # Mostramos las imagenes recortadas    
+            st.subheader("Máscaras recortadas de la imagen original")
+            col1, col2 = st.columns(2)
+                
+            for idx, img in enumerate(cropped_list):
                 with col1 if idx % 2 == 0 else col2:
                     st.image(img, caption=f"Máscara {idx + 1} (superpuesta)", use_column_width=True)
                 
