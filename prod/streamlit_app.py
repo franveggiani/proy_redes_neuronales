@@ -36,6 +36,7 @@ if uploaded_file is not None:
 
             # Crear una copia de la imagen original para superponer máscaras
             combined = original_img.copy().convert("RGBA")
+            combined_images = []
 
             for idx, b64_mask in enumerate(result["masks_base64"]):
                 mask_bytes = base64.b64decode(b64_mask)
@@ -51,9 +52,12 @@ if uploaded_file is not None:
 
                 # Superponer sobre la imagen original
                 combined = Image.alpha_composite(combined, rgba_mask)
-
-            st.image(combined, caption="Resultado con máscaras", use_column_width=True)
-
+                
+                combined_images.append(combined)
+                
+            for idx, img in enumerate(combined_images):
+                st.image(img, caption=f"Máscara {idx + 1}", use_column_width=True)
+                
         else:
             st.error(f"Error al segmentar: {result}")
 
