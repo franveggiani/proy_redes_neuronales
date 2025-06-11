@@ -55,6 +55,8 @@ if uploaded_file is not None:
                 
                 combined_list.append(combined)
                 
+            # Mostramos mascaras superpuestas en formato de tabla con dos columnas    
+            st.subheader("Máscaras superpuestas en la imagen original")
             col1, col2 = st.columns(2)
                 
             for idx, img in enumerate(combined_list):
@@ -63,5 +65,5 @@ if uploaded_file is not None:
                 
                 
         else:
-            st.error(f"Error al segmentar: {result}")
+            st.error(f"Error al segmentar: {result}"
 
