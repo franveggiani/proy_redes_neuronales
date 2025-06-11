@@ -65,5 +65,5 @@ if uploaded_file is not None:
                 
                 
         else:
-            st.error(f"Error al segmentar: {result}"
+            st.error(f"Error al segmentar: {result}")
 
