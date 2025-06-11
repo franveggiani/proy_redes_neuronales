@@ -5,8 +5,12 @@ from PIL import Image, ImageOps
 import io
 import base64
 import numpy as np
+from ultralytics import YOLO
 
 st.title("Segmentación con YOLOv8-seg (FastAPI)")
+
+# Cargar el modelo YOLOv8-seg
+model = YOLO("yolov8n-seg.pt")
 
 uploaded_file = st.file_uploader("Subí una imagen", type=["jpg", "jpeg", "png"])
 
@@ -46,3 +50,4 @@ if uploaded_file is not None:
 
         else:
             st.error(f"Error al segmentar: {response.status_code}")
+
