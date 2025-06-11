@@ -7,6 +7,7 @@ import base64
 import numpy as np
 from ultralytics import YOLO
 from utils import segment
+from style_transfer.utils import apply_style_transfer
 import os
 
 st.title("Segmentación con YOLOv8-seg (FastAPI)")
@@ -73,7 +74,10 @@ if uploaded_file is not None:
                 
             for idx, img in enumerate(cropped_list):
                 with col1 if idx % 2 == 0 else col2:
-                    st.image(img, caption=f"Máscara {idx + 1} (superpuesta)", use_column_width=True)
+                    st.image(img, caption=f"Máscara {idx + 1} recortada", use_column_width=True)
+                    
+                    stylized = apply_style_transfer(img, "style_transfer/mosaic_light.pth")
+                    st.image(stylized, caption=f"Máscara {idx + 1} con estilo", use_column_width=True)
                 
                 
         else:

@@ -27,3 +27,4 @@ def segment(image: Image.Image, model, image_path):
             mask_img.save(mask_path, format="PNG")
 
     return {"num_masks": len(masks), "masks_base64": masks}
+
