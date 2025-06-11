@@ -6,7 +6,7 @@ import io
 import base64
 import numpy as np
 from ultralytics import YOLO
-from .utils import segment
+from utils import segment
 import os
 
 st.title("Segmentación con YOLOv8-seg (FastAPI)")
@@ -27,7 +27,7 @@ if uploaded_file is not None:
     if st.button("Segmentar"):
         with st.spinner("Segmentando..."):
             # Enviar la imagen a la API
-            result = segment_utils(original_img, model, image_path)
+            result = segment(original_img, model, image_path)
 
         if result is not None:
 
