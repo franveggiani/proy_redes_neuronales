@@ -6,6 +6,8 @@ import io
 import base64
 import numpy as np
 from ultralytics import YOLO
+from utils import segment_utils
+import os
 
 st.title("Segmentación con YOLOv8-seg (FastAPI)")
 
@@ -17,18 +19,19 @@ uploaded_file = st.file_uploader("Subí una imagen", type=["jpg", "jpeg", "png"]
 if uploaded_file is not None:
     original_img = Image.open(uploaded_file).convert("RGB")
     st.image(original_img, caption="Imagen original", use_column_width=True)
+    
+    # Creo carpeta para guardar imágenes
+    os.makedirs("/images", exist_ok=True)
+    image_path = os.path.join("/images", uploaded_file.name)
 
     if st.button("Segmentar"):
         with st.spinner("Segmentando..."):
             # Enviar la imagen a la API
-            response = requests.post(
-                "http://localhost:8000/segment",
-                files={"file": uploaded_file}
-            )
+            result = segment_utils(original_img, model, image_path)
 
-        if response.status_code == 200:
-            data = response.json()
-            num_masks = data["num_masks"]
+        if result is not None:
+
+            num_masks = result["num_masks"]
             st.success(f"{num_masks} máscara(s) detectadas")
 
             # Crear una copia de la imagen original para superponer máscaras
@@ -49,5 +52,5 @@ if uploaded_file is not None:
             st.image(combined, caption="Resultado con máscaras", use_column_width=True)
 
         else:
-            st.error(f"Error al segmentar: {response.status_code}")
+            st.error(f"Error al segmentar: {result}")
 

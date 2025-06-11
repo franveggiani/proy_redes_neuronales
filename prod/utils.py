@@ -3,7 +3,7 @@ import base64
 from PIL import Image
 from fastapi.responses import JSONResponse
 
-def segment_image_sync(image: Image.Image, model):
+def segment_image_sync(image: Image.Image, model, image_path):
     # Asegurarse de que la imagen esté en RGB
     image = image.convert("RGB")
     
@@ -21,8 +21,10 @@ def segment_image_sync(image: Image.Image, model):
             mask_img.save(buffered, format="PNG")
             mask_b64 = base64.b64encode(buffered.getvalue()).decode()
             masks.append(mask_b64)
-
+        
+            mask_path = f"{image_path}_mask_{i}.png"
+            
             # Guardar en disco si se desea
-            mask_img.save(f"mask_{i}.png", format="PNG")
+            mask_img.save(mask_path, format="PNG")
 
     return {"num_masks": len(masks), "masks_base64": masks}
