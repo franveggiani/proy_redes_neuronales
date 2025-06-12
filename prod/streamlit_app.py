@@ -1,6 +1,5 @@
 # streamlit_app.py
 import streamlit as st
-import requests
 from PIL import Image, ImageOps
 import io
 import base64
@@ -78,7 +77,23 @@ if uploaded_file is not None:
                     
                     stylized = apply_style_transfer(img, "prod/style_transfer/transforms/tokyo_ghoul_aggressive.pth")
                     st.image(stylized, caption=f"Máscara {idx + 1} con estilo", use_column_width=True)
-                
+                    
+                    # Reemplazar región original por la estilizada
+                    
+                    # Redimensiona la imagen estilizada al tamaño original
+                    stylized = stylized.resize(original_img.size)
+                    stylized_rgba = stylized.convert("RGBA") # Para poder hacer el composite abajo
+
+                    # Usar la máscara como canal alpha para insertar la parte estilizada
+                    # Pone a cero todos los pixeles que no son parte de la mascara
+                    mask_alpha = mask_img.resize(original_img.size).point(lambda p: 255 if p > 0 else 0)
+                    stylized_masked = Image.composite(stylized_rgba, combined, mask_alpha)
+
+                    # Actualizar la imagen original con la versión estilizada de esta mascara
+                    combined = Image.alpha_composite(combined, stylized_masked)
+            # Mostrar la imagen final con los estilos insertados
+            st.subheader("Imagen original con objetos estilizados")
+            st.image(combined, caption="Imagen con style transfer aplicado sobre las máscaras", use_column_width=True)
                 
         else:
             st.error(f"Error al segmentar: {result}")
