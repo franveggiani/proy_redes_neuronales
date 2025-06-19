@@ -21,6 +21,23 @@ if "segment_result" not in st.session_state:
     st.session_state.combined = None
     st.session_state.style_choices = []
 
+# Mostrar clases del dataset COCO
+COCO_CLASSES = [
+    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
+    "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog",
+    "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
+    "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite",
+    "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle",
+    "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange",
+    "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant",
+    "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone",
+    "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
+    "teddy bear", "hair drier", "toothbrush"
+]
+
+with st.expander("📚 Ver clases del dataset COCO (80)"):
+    st.text("\n".join(f"{i+1}. {name}" for i, name in enumerate(COCO_CLASSES)))
+
 uploaded_file = st.file_uploader("Subí una imagen", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -71,7 +88,9 @@ if st.session_state.segment_result is not None:
         st.warning("No se encontraron archivos .pth en la carpeta de estilos.")
     else:
         for idx, img in enumerate(st.session_state.cropped_list):
-            st.image(img, caption=f"Máscara {idx + 1} recortada", use_column_width=True)
+            clase_idx = st.session_state.segment_result["clases"][idx]
+            clase_nombre = COCO_CLASSES[clase_idx] if clase_idx < len(COCO_CLASSES) else f"Clase {clase_idx}"
+            st.image(img, caption=f"Máscara {idx + 1} recortada: {clase_nombre}", use_column_width=True)
             st.session_state.style_choices[idx] = st.selectbox(
                 f"Estilo para máscara {idx + 1}",
                 style_files,
