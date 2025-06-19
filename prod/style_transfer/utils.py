@@ -29,4 +29,5 @@ def apply_style_transfer(content_image: Image.Image, model_path: str) -> Image.I
     
     # Convertir a imagen PIL
     output = output.squeeze(0).permute(1, 2, 0).numpy().astype("uint8")
+    output = output[:, :, [2, 1, 0]]  # BGR → RGB
     return Image.fromarray(output)
