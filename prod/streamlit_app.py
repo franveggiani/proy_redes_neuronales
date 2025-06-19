@@ -1,12 +1,11 @@
 import streamlit as st
-from PIL import Image, ImageOps
+from PIL import Image
 import io
 import base64
-import numpy as np
+import os
 from ultralytics import YOLO
 from utils import segment
 from style_transfer.utils import apply_style_transfer
-import os
 
 st.title("Segmentación con YOLOv8-seg (FastAPI)")
 
@@ -20,6 +19,7 @@ if "segment_result" not in st.session_state:
     st.session_state.mask_imgs = []
     st.session_state.cropped_list = []
     st.session_state.combined = None
+    st.session_state.style_choices = []
 
 uploaded_file = st.file_uploader("Subí una imagen", type=["jpg", "jpeg", "png"])
 
@@ -27,7 +27,6 @@ if uploaded_file is not None:
     original_img = Image.open(uploaded_file).convert("RGB")
     st.image(original_img, caption="Imagen original", use_column_width=True)
 
-    # Crear carpeta para guardar imágenes
     os.makedirs("images", exist_ok=True)
     image_path = os.path.join("images", uploaded_file.name)
 
@@ -59,34 +58,42 @@ if uploaded_file is not None:
             st.session_state.cropped_list = cropped_list
             st.session_state.mask_imgs = mask_imgs
             st.session_state.combined = combined
+            st.session_state.style_choices = [""] * len(cropped_list)  # Reset estilos por máscara
 
-# Si ya hay una segmentación previa, mostrar resultados y aplicar estilos
+# Mostrar máscaras y permitir selección de estilos por separado
 if st.session_state.segment_result is not None:
-    st.subheader("Máscaras recortadas de la imagen original")
-    col1, col2 = st.columns(2)
-    for idx, img in enumerate(st.session_state.cropped_list):
-        with col1 if idx % 2 == 0 else col2:
-            st.image(img, caption=f"Máscara {idx + 1} recortada", use_column_width=True)
+    st.subheader("Elegí un estilo para cada máscara")
 
     style_dir = "prod/style_transfer/transforms"
     style_files = [f for f in os.listdir(style_dir) if f.endswith(".pth")]
 
-    if style_files:
-        selected_style = st.selectbox("Elegí el estilo a aplicar", style_files, key="selected_style_pth")
+    if not style_files:
+        st.warning("No se encontraron archivos .pth en la carpeta de estilos.")
+    else:
+        for idx, img in enumerate(st.session_state.cropped_list):
+            st.image(img, caption=f"Máscara {idx + 1} recortada", use_column_width=True)
+            st.session_state.style_choices[idx] = st.selectbox(
+                f"Estilo para máscara {idx + 1}",
+                style_files,
+                key=f"style_select_{idx}"
+            )
 
-        if st.button("Aplicar estilo a las máscaras"):
+        if st.button("Aplicar estilos a las máscaras"):
             combined = st.session_state.combined.copy()
 
-            for idx, (img, mask_img) in enumerate(zip(st.session_state.cropped_list, st.session_state.mask_imgs)):
-                stylized = apply_style_transfer(img, os.path.join(style_dir, selected_style))
-                st.image(stylized, caption=f"Máscara {idx + 1} con estilo", use_column_width=True)
+            for idx, (img, mask_img, style_file) in enumerate(zip(
+                st.session_state.cropped_list,
+                st.session_state.mask_imgs,
+                st.session_state.style_choices
+            )):
+                model_path = os.path.join(style_dir, style_file)
+                stylized = apply_style_transfer(img, model_path)
+                st.image(stylized, caption=f"Máscara {idx + 1} con estilo {style_file}", use_column_width=True)
 
                 stylized = stylized.resize(st.session_state.original_img.size).convert("RGBA")
                 mask_alpha = mask_img.point(lambda p: 255 if p > 0 else 0)
                 stylized_masked = Image.composite(stylized, combined, mask_alpha)
                 combined = Image.alpha_composite(combined, stylized_masked)
 
-            st.subheader("Imagen con style transfer aplicado sobre las máscaras")
-            st.image(combined, caption="Imagen final", use_column_width=True)
-    else:
-        st.warning("No se encontraron archivos .pth en la carpeta de estilos.")
+            st.subheader("Imagen final con estilos aplicados a las máscaras")
+            st.image(combined, caption="Resultado", use_column_width=True)
