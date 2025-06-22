@@ -1,5 +1,4 @@
 # style_transfer/model.py
-import torch
 import torch.nn as nn
 
 class TransformerNet(nn.Module):
@@ -37,30 +36,6 @@ class TransformerNet(nn.Module):
         x = self.ResidualBlock(x)
         out = self.DeconvBlock(x)
         return out
-
-class TransformerNetworkTanh(TransformerNet):
-    """A modification of the transformation network that uses Tanh function as output 
-    This follows more closely the architecture outlined in the original paper's supplementary material
-    his model produces darker images and provides retro styling effect
-    Reference: https://cs.stanford.edu/people/jcjohns/papers/fast-style/fast-style-supp.pdf
-    """
-    # override __init__ method
-    def __init__(self, tanh_multiplier=150):
-        super(TransformerNetworkTanh, self).__init__()
-        # Add a Tanh layer before output
-        self.DeconvBlock = nn.Sequential(
-            DeconvLayer(128, 64, 3, 2, 1),
-            nn.ReLU(),
-            DeconvLayer(64, 32, 3, 2, 1),
-            nn.ReLU(),
-            ConvLayer(32, 3, 9, 1, norm="None"),
-            nn.Tanh()
-        )
-        self.tanh_multiplier = tanh_multiplier
-
-    # Override forward method
-    def forward(self, x):
-        return super(TransformerNetworkTanh, self).forward(x) * self.tanh_multiplier
 
 class ConvLayer(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride, norm="instance"):
