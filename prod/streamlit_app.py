@@ -58,7 +58,7 @@ uploaded_file = st.file_uploader("Subí una imagen", type=["jpg", "jpeg", "png"]
 
 if uploaded_file is not None:
     original_img = Image.open(uploaded_file).convert("RGB")
-    st.image(original_img, caption="Imagen original", width=800)
+    st.image(original_img, caption="Imagen original", width=400)
 
     os.makedirs("images", exist_ok=True)
     image_path = os.path.join("images", uploaded_file.name)
